@@ -1,11 +1,12 @@
 # RetroSpy, Phosphor edition: builds the Windows app (self-contained, with every skin) on each push, and
-# publishes it as a release for a tag phosphor-<version> (e.g. phosphor-6.10.1). Phosphor's Windows release
-# bundles that zip.
+# publishes it as a release for a tag phosphor-<version> (e.g. phosphor-6.10.1), or a push to the branch
+# release/phosphor-<version> (where tags can't be pushed: the release is tagged here, the branch removed).
+# Phosphor's Windows release bundles that zip.
 name: Phosphor edition (Windows)
 
 on:
   push:
-    branches: [master]
+    branches: [master, "release/phosphor-*"]
     tags: ["phosphor-*"]
   workflow_dispatch:
 
@@ -32,11 +33,18 @@ jobs:
           name: RetroSpy-Phosphor-edition-win64
           path: RetroSpy-Phosphor-edition-win64.zip
           retention-days: 3
-      - name: Release (tags only)
-        if: startsWith(github.ref, 'refs/tags/phosphor-')
+      - name: Release (tags, release/phosphor-* branches)
+        if: startsWith(github.ref, 'refs/tags/phosphor-') || startsWith(github.ref, 'refs/heads/release/phosphor-')
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$GITHUB_REF_NAME" RetroSpy-Phosphor-edition-win64.zip \
-            --title "RetroSpy ${GITHUB_REF_NAME#phosphor-} · Phosphor edition" \
+          TAG="${GITHUB_REF_NAME#release/}"
+          sha256sum RetroSpy-Phosphor-edition-win64.zip > SHA256SUMS.txt
+          gh release create "$TAG" RetroSpy-Phosphor-edition-win64.zip SHA256SUMS.txt --target "$GITHUB_SHA" \
+            --title "RetroSpy ${TAG#phosphor-} · Phosphor edition" \
             --notes "RetroSpy by zoggins and contributors (retro-spy.com), based on NintendoSpy by jaburns; skins by their authors. Phosphor edition by f3bandit: the SuperStation (Phosphor) source and Phosphor layout view, Phosphor's look. GPL-3.0. Unzip and run RetroSpy\\RetroSpy.exe, or get it with Phosphor for Windows."
+      - name: Remove the release branch
+        if: startsWith(github.ref, 'refs/heads/release/phosphor-')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X DELETE "repos/$GITHUB_REPOSITORY/git/refs/heads/$GITHUB_REF_NAME" || true
