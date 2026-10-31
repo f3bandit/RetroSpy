@@ -1,213 +1,191 @@
 <?xml version="1.0"?>
+<!-- RetroSpy's setup window. Phosphor edition (f3bandit): Phosphor's look, the sources in a list on the left, and the
+     SuperStation (Phosphor) source's own panel. Every source and option RetroSpy has is still here. -->
 <Window
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
-    mc:Ignorable="d" d:DesignWidth="602" d:DesignHeight="515.015" Width="602" Height="515.015" MinWidth="602" MinHeight="515.015" MaxWidth="602" MaxHeight="515.015" Foreground="#FFFFFF" Background="#FF252526" CanResize="false" x:Class="RetroSpy.SetupWindow" Title="RetroSpy" >
+    mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="680" Width="1000" Height="680" MinWidth="860" MinHeight="600"
+    x:Class="RetroSpy.SetupWindow" Title="RetroSpy · Phosphor edition">
 
-    <Grid HorizontalAlignment="Left">
-        <StackPanel VerticalAlignment="Top">
-            <Menu Height="20" FontFamily="Segoe UI" FontSize="12" Background="#f0f0f0">
-                <MenuItem Header="_Tools" FontFamily="Segoe UI" FontSize="12">
-                    <MenuItem x:Name="ReloadSkins" Header="Reload Skins" HorizontalAlignment="Left" FontFamily="Segoe UI" FontSize="12" Click="ReloadSkins_Click"/></MenuItem>
-                <MenuItem Header="_Options" FontFamily="Segoe UI" FontSize="12">
-                    <MenuItem x:Name="AddRemove" Header="Add/Remove Sources..." FontFamily="Segoe UI" FontSize="12" HorizontalAlignment="Left" Click="AddRemove_Click"/>
-                    <MenuItem x:Name="CustomSkinPath" Header="Custom Skin Path..." FontFamily="Segoe UI" FontSize="12" HorizontalAlignment="Left" Click="CustomSkinPath_Click"/>
-                    <Separator/>
-                    <MenuItem x:Name="KeybindingBehavior" Header="Legacy Keybinding Behavior" FontFamily="Segoe UI" FontSize="12" HorizontalAlignment="Left" Click="KeybindingBehavior_Checked">
-                        <MenuItem.Icon>
-                            <CheckBox Name="KeybindingCheckbox" Width="20" BorderThickness="0" IsChecked="{Binding LegacyKeybindingBehavior}" Click="KeybindingBehavior_Checked"></CheckBox>
-                        </MenuItem.Icon>
-                    </MenuItem>
-                    <MenuItem x:Name="FilterCOM" Header="Don't Filter COM Ports" FontFamily="Segoe UI" FontSize="12" HorizontalAlignment="Left" Click="FilterCOM_Checked">
-                        <MenuItem.Icon>
-                            <CheckBox Name="FilterCOMCheckbox" Width="20" BorderThickness="0" IsChecked="{Binding FilterCOMPorts}" Click="FilterCOM_Checked"></CheckBox>
-                        </MenuItem.Icon>
-                    </MenuItem>
-                    <MenuItem x:Name="DoNotSavePassword" Header="Don't Save Passwords" FontFamily="Segoe UI" FontSize="12" HorizontalAlignment="Left" Click="DoNotSavePassword_Checked">
-                        <MenuItem.Icon>
-                            <CheckBox Name="DoNotSavePasswordCheckbox" Width="20" BorderThickness="0" IsChecked="{Binding DontSavePassword}" Click="DoNotSavePassword_Checked"></CheckBox>
-                        </MenuItem.Icon>
-                    </MenuItem>
-                    <MenuItem x:Name="LagFix" Header="Need Lag Fix" FontFamily="Segoe UI" FontSize="12" HorizontalAlignment="Left" Click="LagFix_Checked">
-                        <MenuItem.Icon>
-                            <CheckBox Name="LagFixCheckbox" Width="20" BorderThickness="0" IsChecked="{Binding UseLagFix}" Click="LagFix_Checked"/>
-                        </MenuItem.Icon>
-                    </MenuItem>
-					<MenuItem x:Name="UseUSB2" Header="Use USB Lite" FontFamily="Segoe UI" FontSize="12" HorizontalAlignment="Left" Click="UseUSB2_Checked">
-						<MenuItem.Icon>
-							<CheckBox Name="UseUSB2Checkbox" Width="20" BorderThickness="0" IsChecked="{Binding UseUSB2}" Click="UseUSB2_Checked"/>
-						</MenuItem.Icon>
-					</MenuItem>
-					<MenuItem x:Name="UseVJoy" Header="Enable vJoy" FontFamily="Segoe UI" FontSize="12" HorizontalAlignment="Left" Click="UseVJoy_Checked">
-						<MenuItem.Icon>
-							<CheckBox Name="UseVJoyCheckbox" Width="20" BorderThickness="0" IsChecked="{Binding UseVJoy}" Click="UseVJoy_Checked"/>
-						</MenuItem.Icon>
-					</MenuItem>
+    <DockPanel>
+        <Menu DockPanel.Dock="Top" FontSize="13">
+            <MenuItem Header="_Tools">
+                <MenuItem x:Name="ReloadSkins" Header="Reload Skins" Click="ReloadSkins_Click"/>
+            </MenuItem>
+            <MenuItem Header="_Options">
+                <MenuItem x:Name="AddRemove" Header="Add/Remove Sources..." Click="AddRemove_Click"/>
+                <MenuItem x:Name="CustomSkinPath" Header="Custom Skin Path..." Click="CustomSkinPath_Click"/>
+                <Separator/>
+                <MenuItem x:Name="KeybindingBehavior" Header="Legacy Keybinding Behavior" Click="KeybindingBehavior_Checked">
+                    <MenuItem.Icon><CheckBox Name="KeybindingCheckbox" Width="20" BorderThickness="0" IsChecked="{Binding LegacyKeybindingBehavior}" Click="KeybindingBehavior_Checked"/></MenuItem.Icon>
                 </MenuItem>
-                <MenuItem Header="_Help" FontFamily="Segoe UI" FontSize="12">
-                    <MenuItem FontFamily="Segoe UI" FontSize="12" x:Name="About" Header="About" HorizontalAlignment="Left" Click="About_Click"/>
+                <MenuItem x:Name="FilterCOM" Header="Don't Filter COM Ports" Click="FilterCOM_Checked">
+                    <MenuItem.Icon><CheckBox Name="FilterCOMCheckbox" Width="20" BorderThickness="0" IsChecked="{Binding FilterCOMPorts}" Click="FilterCOM_Checked"/></MenuItem.Icon>
                 </MenuItem>
-		    </Menu>
-        </StackPanel>
-        <Label Name="MisterControllerIdLabel" Content="Controller:" HorizontalAlignment="Left" Margin="340,140,0,0" VerticalAlignment="Top" Foreground="#FFCBCBCB" FontFamily="/Assets/Carlito-Regular.ttf#Carlito" FontSize="16" IsVisible="{Binding MiSTerGamepadOptionVisibility}"/>
-		<ComboBox Name="MisterControllerIdCombo" Width="86.8" Height="29.9" Margin="425,140,90.2,0" VerticalAlignment="Top" BorderBrush="#FF252525" FontFamily="Segoe UI" FontSize="12" Background="#efefef" IsVisible="{Binding MiSTerGamepadOptionVisibility}" ItemsSource="{Binding MisterGamepad}" SelectedItem="{Binding MisterGamepad.SelectedItem}">
-			<ComboBox.ItemTemplate>
-				<DataTemplate>
-					<TextBlock Text="{Binding}"/>
-				</DataTemplate>
-			</ComboBox.ItemTemplate>
-		</ComboBox>
-        <Button Name="MiSTerPopulate" Content="Detect" Margin="522,0,0,340" Height="35" VerticalContentAlignment="Center" VerticalAlignment="Bottom" FontSize="16" FontFamily="/Assets/Carlito-Regular.ttf#Carlito" Background="#FF3E3E42" Foreground="#FFCBCBCB" BorderBrush="#FF252526" Click="MiSTerPopulate_Click" IsVisible="{Binding MiSTerGamepadOptionVisibility}">
-            <Button.Styles>
-                <Style Selector="Button:pointerover /template/ ContentPresenter">
-                    <Setter Property="Background" Value="#4a657b"/>
-                    <Setter Property="TextBlock.Foreground" Value="#efefef"/>
-                    <Setter Property="ContentTemplate"></Setter>
-                </Style>
-            </Button.Styles>
-        </Button>
-        <ComboBox Name="SourcesComboBox" Margin="145,37,10,0" SelectedIndex="0" VerticalAlignment="Top" BorderBrush="#FF252525" Width="447" Height="29.9" FontFamily="Segoe UI" FontSize="12" Background="#efefef" SelectionChanged="SourceSelectComboBox_SelectionChanged" ItemsSource="{Binding Sources}" SelectedItem="{Binding Sources.SelectedItem}">
-            <ComboBox.ItemTemplate>
-                <DataTemplate>
-                    <TextBlock Text="{Binding Name}"/>
-                </DataTemplate>
-            </ComboBox.ItemTemplate>
-        </ComboBox>
-        <Label Content="Controller Source:" HorizontalAlignment="Left" Margin="10,37,0,0" VerticalAlignment="Top" Foreground="#FFCBCBCB" FontFamily="/Assets/Carlito-Regular.ttf#Carlito" FontSize="16"/>
-        <Label Name="ComPortLabel" Content="COM Port:" HorizontalAlignment="Left" Margin="59,70,0,0" VerticalAlignment="Top" Foreground="#FFCBCBCB" FontFamily="/Assets/Carlito-Regular.ttf#Carlito" FontSize="16" IsVisible="{Binding ComPortOptionVisibility}"/>
-		<Label Name="EmulatorPIDLabel" Content="PID:" HorizontalAlignment="Left" Margin="59,70,0,0" VerticalAlignment="Top" Foreground="#FFCBCBCB" FontFamily="/Assets/Carlito-Regular.ttf#Carlito" FontSize="16" IsVisible="{Binding EmulatorPIDsOptionVisibility}"/>
-		<Label Name="ControllerIdLabel" Content="Controller:" HorizontalAlignment="Left" Margin="59,70,0,0" VerticalAlignment="Top" Foreground="#FFCBCBCB" FontFamily="/Assets/Carlito-Regular.ttf#Carlito" FontSize="16" IsVisible="{Binding XIAndGamepadOptionVisibility}"/>
-		<Label Name="HostnameLabel" Content="Hostname:" HorizontalAlignment="Left" Margin="59,70,0,0" VerticalAlignment="Top" Foreground="#FFCBCBCB" FontFamily="/Assets/Carlito-Regular.ttf#Carlito" FontSize="16" IsVisible="{Binding SSHOptionVisibility}"/>
-        <ComboBox Name="ComPortCombo" Margin="145,70,10,0" Width="447" Height="29.9" VerticalAlignment="Top" BorderBrush="#FF252525" FontFamily="Segoe UI" FontSize="12" Background="#efefef" IsVisible="{Binding ComPortOptionVisibility}" ItemsSource="{Binding Ports}" SelectedItem="{Binding Ports.SelectedItem}" SelectionChanged="ComPortCombo_SelectionChanged">
-            <ComboBox.ItemTemplate>
-                <DataTemplate>
-                    <TextBlock Text="{Binding}"/>
-                </DataTemplate>
-            </ComboBox.ItemTemplate>
-        </ComboBox>
-		<ComboBox Name="EmulatorPIDsCombo" Margin="145,70,10,0" Width="447" Height="29.9" VerticalAlignment="Top" BorderBrush="#FF252525" FontFamily="Segoe UI" FontSize="12" Background="#efefef" IsVisible="{Binding EmulatorPIDsOptionVisibility}" ItemsSource="{Binding EmulatorPIDs}" SelectedItem="{Binding EmulatorPIDs.SelectedItem}">
-			<ComboBox.ItemTemplate>
-				<DataTemplate>
-					<TextBlock Text="{Binding}"/>
-				</DataTemplate>
-			</ComboBox.ItemTemplate>
-		</ComboBox>
-        <ComboBox Name="ControllerIdCombo" Margin="145,70,10,0" VerticalAlignment="Top" BorderBrush="#FF252525" FontFamily="Segoe UI" FontSize="12" Background="#efefef" Width="447" Height="29.96" IsVisible="{Binding XIAndGamepadOptionVisibility}" ItemsSource="{Binding XIAndGamepad}" SelectedItem="{Binding XIAndGamepad.SelectedItem}">
-            <ComboBox.ItemTemplate>
-                <DataTemplate>
-                    <TextBlock Text="{Binding}"/>
-                </DataTemplate>
-            </ComboBox.ItemTemplate>
-        </ComboBox>
-        <TextBox Name="txtHostname" Margin="145,70,10.333,0" VerticalAlignment="Top" Height="24" FontSize="16" FontFamily="/Assets/Carlito-Regular.ttf#Carlito" Background="#FF3E3E42" Foreground="#FFCBCBCB" BorderBrush="#FF656565" TextAlignment="Left" Width="446.667" IsVisible="{Binding SSHOptionVisibility}" ScrollViewer.VerticalScrollBarVisibility="Hidden" Text="{Binding Hostname}">
-            <TextBox.Styles>
-                <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
-                    <Setter Property="Background" Value="#FF3E3E42"/>
-                </Style>
-                <Style Selector="TextBox:pointerover /template/ Border#PART_BorderElement">
-                    <Setter Property="BorderBrush" Value="#0078d7"/>
-                    <Setter Property="Background" Value="#FF3E3E42"/>
-                </Style>
-            </TextBox.Styles>
-        </TextBox>
-        <Label Content="Viewer Skin:" HorizontalAlignment="Left" Margin="10,175,0,0" VerticalAlignment="Top" Foreground="#FFCBCBCB" FontFamily="/Assets/Carlito-Regular.ttf#Carlito" FontSize="16" Height="29.53"/>
-        <ListBox Name="SkinListBox" Margin="10,198,265.333,47" Background="#FF1D1D1D" Foreground="#FFCBCBCB" BorderBrush="#FF3E3E42" BorderThickness="2" FontFamily="/Assets/Carlito-Regular.ttf#Carlito" FontSize="16" SelectedIndex="0" Width="326.667" Height="254.055" ItemsSource="{Binding Skins}" SelectedItem="{Binding Skins.SelectedItem}" SelectionChanged="Skin_SelectionChanged">
-            <ListBox.Styles>
-                <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
-                    <Setter Property="Background" Value="#4a657b"/>
-                    <Setter Property="ContentTemplate">
-                        <DataTemplate>
-                            <Border>
-                                <TextBlock Foreground="#efefef" Text="{Binding Name}"/>
-                            </Border>
-                        </DataTemplate>
-                    </Setter>
-                </Style>
-            </ListBox.Styles>
-            <ListBox.ItemTemplate>
-                <DataTemplate>
-                    <Border>
-                        <TextBlock Foreground="#efefef" Text="{Binding Name}"/>
+                <MenuItem x:Name="DoNotSavePassword" Header="Don't Save Passwords" Click="DoNotSavePassword_Checked">
+                    <MenuItem.Icon><CheckBox Name="DoNotSavePasswordCheckbox" Width="20" BorderThickness="0" IsChecked="{Binding DontSavePassword}" Click="DoNotSavePassword_Checked"/></MenuItem.Icon>
+                </MenuItem>
+                <MenuItem x:Name="LagFix" Header="Need Lag Fix" Click="LagFix_Checked">
+                    <MenuItem.Icon><CheckBox Name="LagFixCheckbox" Width="20" BorderThickness="0" IsChecked="{Binding UseLagFix}" Click="LagFix_Checked"/></MenuItem.Icon>
+                </MenuItem>
+                <MenuItem x:Name="UseUSB2" Header="Use USB Lite" Click="UseUSB2_Checked">
+                    <MenuItem.Icon><CheckBox Name="UseUSB2Checkbox" Width="20" BorderThickness="0" IsChecked="{Binding UseUSB2}" Click="UseUSB2_Checked"/></MenuItem.Icon>
+                </MenuItem>
+                <MenuItem x:Name="UseVJoy" Header="Enable vJoy" Click="UseVJoy_Checked">
+                    <MenuItem.Icon><CheckBox Name="UseVJoyCheckbox" Width="20" BorderThickness="0" IsChecked="{Binding UseVJoy}" Click="UseVJoy_Checked"/></MenuItem.Icon>
+                </MenuItem>
+            </MenuItem>
+            <MenuItem Header="_Help">
+                <MenuItem x:Name="About" Header="About and credits" Click="About_Click"/>
+            </MenuItem>
+        </Menu>
+
+        <Grid ColumnDefinitions="260,*">
+            <!-- the sources -->
+            <Border Grid.Column="0" BorderBrush="{StaticResource PhLine}" BorderThickness="0,0,1,0" Padding="12,16,12,12">
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Top" Classes="h" Text="SOURCE" Margin="10,0,0,10"/>
+                    <TextBlock DockPanel.Dock="Bottom" Foreground="{StaticResource PhFaint}" FontSize="12" TextWrapping="Wrap" Margin="10,10,4,0"
+                               Text="Options › Add/Remove Sources picks which ones are listed."/>
+                    <ListBox Name="SourcesComboBox" ItemsSource="{Binding Sources}" SelectedItem="{Binding Sources.SelectedItem}"
+                             SelectionChanged="SourceSelectComboBox_SelectionChanged">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate><TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis"/></DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </DockPanel>
+            </Border>
+
+            <!-- the selected source -->
+            <DockPanel Grid.Column="1" Margin="26,18,26,16">
+                <!-- footer: start, credits -->
+                <StackPanel DockPanel.Dock="Bottom" Spacing="12">
+                    <StackPanel Orientation="Horizontal" Spacing="14">
+                        <Button Name="goButton" Classes="primary" Content="Start watching" Click="GoButton_Click"/>
+                        <CheckBox x:Name="staticViewerNameCheckbox" Content="Static window name (for OBS)" IsChecked="{Binding StaticViewerWindowName}" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <Border BorderBrush="{StaticResource PhLine}" BorderThickness="0,1,0,0" Padding="0,10,0,0">
+                        <TextBlock Foreground="{StaticResource PhFaint}" FontSize="12" TextWrapping="Wrap"
+                                   Text="RetroSpy by zoggins and contributors (retro-spy.com), based on NintendoSpy by jaburns; skins by their authors. GPL-3.0. Phosphor edition by f3bandit. Help › About and credits."/>
                     </Border>
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
-        <TextBox Name="txtDelay" Margin="145,138,265.2,0" VerticalAlignment="Top" Height="24" Width="191.8" FontSize="16" FontFamily="/Assets/Carlito-Regular.ttf#Carlito" Background="#FF3E3E42" Foreground="#FFCBCBCB" BorderBrush="#FF656565" TextAlignment="Right" Text="0" Classes="NumberOnly" ScrollViewer.VerticalScrollBarVisibility="Hidden">
-            <TextBox.Styles>
-                <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
-                    <Setter Property="Background" Value="#FF3E3E42"/>
-                </Style>
-                <Style Selector="TextBox:pointerover /template/ Border#PART_BorderElement">
-                    <Setter Property="BorderBrush" Value="#0078d7"/>
-                    <Setter Property="Background" Value="#FF3E3E42"/>
-                </Style>
-            </TextBox.Styles>
-        </TextBox>
-        <Button Name="goButton" Width="582" Height="30" Content="Go!" HorizontalContentAlignment="Center" Margin="10,0,10,10" HorizontalAlignment="Center" VerticalAlignment="Bottom" FontSize="16" FontFamily="/Assets/Carlito-Regular.ttf#Carlito" Background="#FF3E3E42" Foreground="#FFCBCBCB" BorderBrush="#FF252526" Click="GoButton_Click">
-            <Button.Styles>
-                <Style Selector="Button:pointerover /template/ ContentPresenter">
-                    <Setter Property="Background" Value="#4a657b"/>
-                    <Setter Property="TextBlock.Foreground" Value="#efefef"/>
-                    <Setter Property="ContentTemplate"></Setter>
-                </Style>
-            </Button.Styles>
-        </Button>
-        <ListBox Name="BackgroundListBox" Margin="0,198,10.333,47" Background="#FF1D1D1D" Foreground="#FFCBCBCB" BorderBrush="#FF3E3E42" BorderThickness="2" FontFamily="/Assets/Carlito-Regular.ttf#Carlito" FontSize="16" SelectedIndex="0" HorizontalAlignment="Right" Width="250" Height="254.055" ItemsSource="{Binding Backgrounds}" SelectedItem="{Binding Backgrounds.SelectedItem}">
-            <ListBox.Styles>
-                <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
-                    <Setter Property="Background" Value="#4a657b"/>
-                    <Setter Property="ContentTemplate">
-                        <DataTemplate>
-                            <Border>
-                                <TextBlock Foreground="#efefef" Text="{Binding Name}"/>
-                            </Border>
-                        </DataTemplate>
-                    </Setter>
-                </Style>
-            </ListBox.Styles>
-            <ListBox.ItemTemplate>
-                <DataTemplate>
-                    <TextBlock Foreground="#efefef" Text="{Binding Name}"/>
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
-        <Label x:Name="DelayLabel" Content="Delay (ms):" HorizontalAlignment="Left" Margin="54,138,0,0" VerticalAlignment="Top" Foreground="#FFCBCBCB" FontFamily="/Assets/Carlito-Regular.ttf#Carlito" FontSize="16"/>
-        <CheckBox x:Name="staticViewerNameCheckbox" Content="Static View Window Name" HorizontalAlignment="Left" Margin="382,175,0,0" VerticalAlignment="Top" Width="202" Foreground="White" FontSize="16" FontFamily="/Assets/Carlito-Regular.ttf#Carlito" Height="24" IsChecked="{Binding StaticViewerWindowName}">
-            <CheckBox.Styles>
-                <Style Selector="CheckBox:pointerover /template/ ContentPresenter">
-                    <Setter Property="TextBlock.Foreground" Value="#4a657b"/>
-                    <Setter Property="ContentTemplate"></Setter>
-                </Style>
-            </CheckBox.Styles>
-        </CheckBox>
-        <Label x:Name="ComPort2Label_Copy" Content="COM Port 2:" HorizontalAlignment="Left" Margin="49,104,0,0" VerticalAlignment="Top" Foreground="#FFCBCBCB" FontFamily="/Assets/Carlito-Regular.ttf#Carlito" FontSize="16" IsVisible="{Binding ComPort2OptionVisibility}"/>
-        <ComboBox Name="ComPort2Combo" Margin="145,104,10.333,0" VerticalAlignment="Top" BorderBrush="#FF252525" Height="29.9" Width="446.667" Background="#efefef" IsVisible="{Binding ComPort2OptionVisibility}" FontFamily="Segoe UI" FontSize="12" ItemsSource="{Binding Ports2}" SelectedItem="{Binding Ports2.SelectedItem}" SelectionChanged="ComPortCombo_SelectionChanged"></ComboBox>
-        <Label x:Name="UsernameLabel" Content="Username:" HorizontalAlignment="Left" Margin="49,104,0,0" VerticalAlignment="Top" Foreground="#FFCBCBCB" FontFamily="/Assets/Carlito-Regular.ttf#Carlito" FontSize="16" IsVisible="{Binding SSHOptionVisibility}"/>
-        <TextBox x:Name="txtUsername" Margin="145,104,266,0" VerticalAlignment="Top" Height="24" FontSize="16" FontFamily="/Assets/Carlito-Regular.ttf#Carlito" Background="#FF3E3E42" Foreground="#FFCBCBCB" BorderBrush="#FF656565" TextAlignment="Left" IsVisible="{Binding SSHOptionVisibility}" ScrollViewer.VerticalScrollBarVisibility="Hidden">
-            <TextBox.Styles>
-                <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
-                    <Setter Property="Background" Value="#FF3E3E42"/>
-                </Style>
-                <Style Selector="TextBox:pointerover /template/ Border#PART_BorderElement">
-                    <Setter Property="BorderBrush" Value="#0078d7"/>
-                    <Setter Property="Background" Value="#FF3E3E42"/>
-                </Style>
-            </TextBox.Styles>
-        </TextBox>
-        <Label x:Name="PasswordLabel" Content="Password:" HorizontalAlignment="Left" Margin="339,106,0,0" VerticalAlignment="Top" Foreground="#FFCBCBCB" FontFamily="/Assets/Carlito-Regular.ttf#Carlito" FontSize="16" IsVisible="{Binding SSHOptionVisibility}"/>
-        <TextBox RevealPassword="false" PasswordChar="*" x:Name="txtPassword" Margin="411,104,10,0" VerticalAlignment="Top" Height="24" FontSize="16" FontFamily="/Assets/Carlito-Regular.ttf#Carlito" Background="#FF3E3E42" Foreground="#FFCBCBCB" BorderBrush="#FF656565" IsVisible="{Binding SSHOptionVisibility}" ScrollViewer.VerticalScrollBarVisibility="Hidden">
-            <TextBox.Styles>
-                <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
-                    <Setter Property="Background" Value="#FF3E3E42"/>
-                </Style>
-                <Style Selector="TextBox:pointerover /template/ Border#PART_BorderElement">
-                    <Setter Property="BorderBrush" Value="#0078d7"/>
-                    <Setter Property="Background" Value="#FF3E3E42"/>
-                </Style>
-            </TextBox.Styles>
-        </TextBox>
-    </Grid>
+                </StackPanel>
+
+                <ScrollViewer>
+                    <StackPanel Spacing="16">
+                        <TextBlock Text="{Binding SourceName}" FontSize="22" FontWeight="SemiBold"/>
+
+                        <!-- SuperStation (Phosphor) -->
+                        <Border Classes="card" IsVisible="{Binding PhosphorOptionVisibility}">
+                            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
+                                <StackPanel Grid.Column="0" Spacing="4">
+                                    <TextBlock Classes="h" Text="ACTIVE CONTROLLER"/>
+                                    <TextBlock Text="{Binding PhosphorTitle}" FontSize="18" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                                    <TextBlock Text="{Binding PhosphorDetail}" FontSize="13" Foreground="{StaticResource PhMuted}" TextWrapping="Wrap"/>
+                                </StackPanel>
+                                <Button Grid.Column="1" Name="PhosphorFind" Content="Find the SuperStation" VerticalAlignment="Top" Click="PhosphorFind_Click"/>
+                                <Grid Grid.Row="1" Grid.ColumnSpan="2" ColumnDefinitions="*,14,*,14,*" Margin="0,14,0,0">
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Classes="field" Text="Controller to show"/>
+                                        <ComboBox Name="PhosphorPlayerCombo" HorizontalAlignment="Stretch" SelectedIndex="{Binding PhosphorPlayer}">
+                                            <ComboBoxItem>The active one (Player 1)</ComboBoxItem>
+                                            <ComboBoxItem>Player 1</ComboBoxItem>
+                                            <ComboBoxItem>Player 2</ComboBoxItem>
+                                            <ComboBoxItem>Player 3</ComboBoxItem>
+                                            <ComboBoxItem>Player 4</ComboBoxItem>
+                                        </ComboBox>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2">
+                                        <TextBlock Classes="field" Text="Look"/>
+                                        <ComboBox Name="PhosphorLookCombo" HorizontalAlignment="Stretch" SelectedIndex="{Binding PhosphorLook}">
+                                            <ComboBoxItem>Phosphor layout</ComboBoxItem>
+                                            <ComboBoxItem>A RetroSpy skin</ComboBoxItem>
+                                        </ComboBox>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="4">
+                                        <TextBlock Classes="field" Text="Background"/>
+                                        <ComboBox Name="PhosphorBackgroundCombo" HorizontalAlignment="Stretch" SelectedIndex="{Binding PhosphorBackground}" IsEnabled="{Binding PhosphorUsesLayout}">
+                                            <ComboBoxItem>Dark</ComboBoxItem>
+                                            <ComboBoxItem>Green screen</ComboBoxItem>
+                                            <ComboBoxItem>Transparent</ComboBoxItem>
+                                        </ComboBox>
+                                    </StackPanel>
+                                </Grid>
+                            </Grid>
+                        </Border>
+
+                        <!-- connection and the source's own settings -->
+                        <Grid ColumnDefinitions="*,14,*" RowDefinitions="Auto,Auto,Auto,Auto">
+                            <StackPanel Grid.Row="0" Grid.ColumnSpan="3" IsVisible="{Binding SSHOptionVisibility}" Margin="0,0,0,12">
+                                <TextBlock Name="HostnameLabel" Classes="field" Text="Address (host name or IP)"/>
+                                <TextBox Name="txtHostname" Text="{Binding Hostname}"/>
+                            </StackPanel>
+                            <StackPanel Grid.Row="1" Grid.Column="0" IsVisible="{Binding SSHOptionVisibility}" Margin="0,0,0,12">
+                                <TextBlock x:Name="UsernameLabel" Classes="field" Text="User name"/>
+                                <TextBox x:Name="txtUsername"/>
+                            </StackPanel>
+                            <StackPanel Grid.Row="1" Grid.Column="2" IsVisible="{Binding SSHOptionVisibility}" Margin="0,0,0,12">
+                                <TextBlock x:Name="PasswordLabel" Classes="field" Text="Password"/>
+                                <TextBox x:Name="txtPassword" PasswordChar="•" RevealPassword="false"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="0" Grid.ColumnSpan="3" IsVisible="{Binding ComPortOptionVisibility}" Margin="0,0,0,12">
+                                <TextBlock Name="ComPortLabel" Classes="field" Text="COM port"/>
+                                <ComboBox Name="ComPortCombo" HorizontalAlignment="Stretch" ItemsSource="{Binding Ports}" SelectedItem="{Binding Ports.SelectedItem}" SelectionChanged="ComPortCombo_SelectionChanged">
+                                    <ComboBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding}"/></DataTemplate></ComboBox.ItemTemplate>
+                                </ComboBox>
+                            </StackPanel>
+                            <StackPanel Grid.Row="1" Grid.ColumnSpan="3" IsVisible="{Binding ComPort2OptionVisibility}" Margin="0,0,0,12">
+                                <TextBlock x:Name="ComPort2Label_Copy" Classes="field" Text="COM port 2"/>
+                                <ComboBox Name="ComPort2Combo" HorizontalAlignment="Stretch" ItemsSource="{Binding Ports2}" SelectedItem="{Binding Ports2.SelectedItem}" SelectionChanged="ComPortCombo_SelectionChanged"/>
+                            </StackPanel>
+                            <StackPanel Grid.Row="0" Grid.ColumnSpan="3" IsVisible="{Binding XIAndGamepadOptionVisibility}" Margin="0,0,0,12">
+                                <TextBlock Name="ControllerIdLabel" Classes="field" Text="Controller"/>
+                                <ComboBox Name="ControllerIdCombo" HorizontalAlignment="Stretch" ItemsSource="{Binding XIAndGamepad}" SelectedItem="{Binding XIAndGamepad.SelectedItem}">
+                                    <ComboBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding}"/></DataTemplate></ComboBox.ItemTemplate>
+                                </ComboBox>
+                            </StackPanel>
+                            <StackPanel Grid.Row="0" Grid.ColumnSpan="3" IsVisible="{Binding EmulatorPIDsOptionVisibility}" Margin="0,0,0,12">
+                                <TextBlock Name="EmulatorPIDLabel" Classes="field" Text="Emulator (PID)"/>
+                                <ComboBox Name="EmulatorPIDsCombo" HorizontalAlignment="Stretch" ItemsSource="{Binding EmulatorPIDs}" SelectedItem="{Binding EmulatorPIDs.SelectedItem}">
+                                    <ComboBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding}"/></DataTemplate></ComboBox.ItemTemplate>
+                                </ComboBox>
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="2" Grid.Column="0" IsVisible="{Binding MiSTerGamepadOptionVisibility}" Margin="0,0,0,12">
+                                <TextBlock Name="MisterControllerIdLabel" Classes="field" Text="Controller (jsN)"/>
+                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                    <ComboBox Name="MisterControllerIdCombo" MinWidth="120" ItemsSource="{Binding MisterGamepad}" SelectedItem="{Binding MisterGamepad.SelectedItem}">
+                                        <ComboBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding}"/></DataTemplate></ComboBox.ItemTemplate>
+                                    </ComboBox>
+                                    <Button Name="MiSTerPopulate" Content="Detect" Click="MiSTerPopulate_Click"/>
+                                </StackPanel>
+                            </StackPanel>
+                            <StackPanel Grid.Row="2" Grid.Column="2" Margin="0,0,0,12">
+                                <TextBlock x:Name="DelayLabel" Classes="field" Text="Delay (ms)"/>
+                                <TextBox Name="txtDelay" Text="0" Classes="NumberOnly" TextAlignment="Right"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- skins and backgrounds -->
+                        <Grid ColumnDefinitions="3*,14,2*" IsVisible="{Binding SkinsVisibility}">
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Classes="field" Text="Skin"/>
+                                <ListBox Name="SkinListBox" Classes="list" Height="200" ItemsSource="{Binding Skins}" SelectedItem="{Binding Skins.SelectedItem}" SelectionChanged="Skin_SelectionChanged">
+                                    <ListBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding Name}"/></DataTemplate></ListBox.ItemTemplate>
+                                </ListBox>
+                            </StackPanel>
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Classes="field" Text="Background"/>
+                                <ListBox Name="BackgroundListBox" Classes="list" Height="200" ItemsSource="{Binding Backgrounds}" SelectedItem="{Binding Backgrounds.SelectedItem}">
+                                    <ListBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding Name}"/></DataTemplate></ListBox.ItemTemplate>
+                                </ListBox>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </ScrollViewer>
+            </DockPanel>
+        </Grid>
+    </DockPanel>
 </Window>

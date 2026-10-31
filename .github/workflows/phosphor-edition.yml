@@ -1,0 +1,42 @@
+# RetroSpy, Phosphor edition: builds the Windows app (self-contained, with every skin) on each push, and
+# publishes it as a release for a tag phosphor-<version> (e.g. phosphor-6.10.1). Phosphor's Windows release
+# bundles that zip.
+name: Phosphor edition (Windows)
+
+on:
+  push:
+    branches: [master]
+    tags: ["phosphor-*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+      - name: Build (win-x64, self-contained)
+        run: |
+          dotnet publish RetroSpyX/RetroSpyX.csproj -c Release -r win-x64 --self-contained true -nologo -o out/RetroSpy
+          cp LICENSE out/RetroSpy/LICENSE.txt
+          cp README.md out/RetroSpy/README.md
+          test -f out/RetroSpy/RetroSpy.exe && test -d out/RetroSpy/skins
+          cd out && zip -qr ../RetroSpy-Phosphor-edition-win64.zip RetroSpy
+      - uses: actions/upload-artifact@v4
+        with:
+          name: RetroSpy-Phosphor-edition-win64
+          path: RetroSpy-Phosphor-edition-win64.zip
+          retention-days: 3
+      - name: Release (tags only)
+        if: startsWith(github.ref, 'refs/tags/phosphor-')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" RetroSpy-Phosphor-edition-win64.zip \
+            --title "RetroSpy ${GITHUB_REF_NAME#phosphor-} · Phosphor edition" \
+            --notes "RetroSpy by zoggins and contributors (retro-spy.com), based on NintendoSpy by jaburns; skins by their authors. Phosphor edition by f3bandit: the SuperStation (Phosphor) source and Phosphor layout view, Phosphor's look. GPL-3.0. Unzip and run RetroSpy\\RetroSpy.exe, or get it with Phosphor for Windows."

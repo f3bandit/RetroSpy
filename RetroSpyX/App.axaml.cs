@@ -1,4 +1,4 @@
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 
@@ -36,6 +36,14 @@ namespace RetroSpy
                         {
                             delay = item.Substring(7);
                         }
+                    }
+                    // Phosphor edition: --phosphor <address> [--player N] [--go] opens the SuperStation (Phosphor) source on
+                    // that SuperStation (Phosphor's Windows app opens RetroSpy this way); --go starts watching
+                    for (int i = 0; i < args.Args.Length; i++)
+                    {
+                        if (args.Args[i] == "--phosphor" && i + 1 < args.Args.Length) SetupWindow.PhosphorLaunchHost = args.Args[++i];
+                        else if (args.Args[i] == "--player" && i + 1 < args.Args.Length && int.TryParse(args.Args[++i], out int pl)) SetupWindow.PhosphorLaunchPlayer = pl;
+                        else if (args.Args[i] == "--go") SetupWindow.PhosphorLaunchGo = true;
                     }
 
                     desktop.MainWindow = new SetupWindow(skipSetup, source, skin, delay);

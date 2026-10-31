@@ -1,3 +1,16 @@
+# RetroSpy · Phosphor edition
+
+This is a fork of [RetroSpy](https://github.com/retrospy/RetroSpy) by **zoggins** and the RetroSpy contributors ([retro-spy.com](https://retro-spy.com)), itself a fork of [NintendoSpy](https://github.com/jaburns/NintendoSpy) by **jaburns**. Every skin is by the author named in its `skin.xml`. All of RetroSpy is still here; this edition adds, for a SuperStation One running [Phosphor](https://github.com/f3bandit/phosphor_os):
+
+- **SuperStation (Phosphor)** source: RetroSpy asks Phosphor (over the same SSH login the MiSTer source uses) which controller is active, Player 1's or a player you pick, and follows it when that changes.
+- **Phosphor layout**: the controller is drawn the way Phosphor's controller test draws it (Xbox-style, PlayStation, Switch Pro, NES, SNES, PC Engine, Genesis 3/6, arcade sticks and more), detected by Phosphor, lit live, on a dark, green-screen or transparent background for OBS. RetroSpy's own MiSTer skins work with this source too.
+- Phosphor's look for the app, and an About window with the credits.
+- `RetroSpy --phosphor <address> [--player N] [--go]` opens it on that SuperStation (Phosphor's Windows app opens it this way).
+
+The input is read the way RetroSpy's MiSTer source reads it (its MiSTer program, installed on the SuperStation through Update All). GPL-3.0, as RetroSpy. Phosphor edition by f3bandit.
+
+---
+
 # RetroSpy
 
 #### [Download the latest RetroSpy release here.](https://github.com/retrospy/RetroSpy/releases/latest)

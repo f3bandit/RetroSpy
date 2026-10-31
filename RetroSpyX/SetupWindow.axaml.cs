@@ -1,4 +1,4 @@
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Threading;
 using MsBox.Avalonia.Enums;
@@ -23,6 +23,8 @@ using System.Threading.Tasks;
 using Vortice;
 using static System.Net.WebRequestMethods;
 using ComboBox = Avalonia.Controls.ComboBox;
+using Avalonia.Controls.Primitives;
+using RetroSpy.Phosphor;
 using File = System.IO.File;
 using RoutedEventArgs = Avalonia.Interactivity.RoutedEventArgs;
 using SelectionChangedEventArgs = Avalonia.Controls.SelectionChangedEventArgs;
@@ -161,7 +163,7 @@ namespace RetroSpy
             LoadResults results = Skin.LoadAllSkinsFromParentFolder(skinsDirectory, Properties.Settings.Default.CustomSkinPath);
             _skins = results.SkinsLoaded;
 
-            _vm.Skins.UpdateContents(_skins?.Where(x => x.Type == _vm.Sources.SelectedItem));
+            _vm.Skins.UpdateContents(_skins?.Where(x => x.Type == SkinSource(_vm.Sources.SelectedItem)));
 
             PopulateSources();
         }
@@ -191,7 +193,7 @@ namespace RetroSpy
             LoadResults results = Skin.LoadAllSkinsFromParentFolder(skinsDirectory, Properties.Settings.Default.CustomSkinPath);
             _skins = results.SkinsLoaded;
 
-            _vm.Skins.UpdateContents(_skins?.Where(x => x.Type == _vm.Sources.SelectedItem));
+            _vm.Skins.UpdateContents(_skins?.Where(x => x.Type == SkinSource(_vm.Sources.SelectedItem)));
 
             PopulateSources();
         }
@@ -295,11 +297,11 @@ namespace RetroSpy
 
                 PopulateSources();
 
-                _vm.Username = _vm.Sources.SelectedItem == InputSource.MISTER
+                _vm.Username = IsMiSTerLogin(_vm.Sources.SelectedItem)
                     ? Properties.Settings.Default.MisterUsername
                     : Properties.Settings.Default.BeagleboneUsername;
 
-                txtPassword.Text = _vm.Sources.SelectedItem == InputSource.MISTER
+                txtPassword.Text = IsMiSTerLogin(_vm.Sources.SelectedItem)
                     ? Properties.Settings.Default.MisterPassword
                     : Properties.Settings.Default.BeaglebonePassword;
 
@@ -442,6 +444,11 @@ namespace RetroSpy
 
                     GoButton_Click(null, null);
                 }
+                else if (PhosphorLaunchHost != null)
+                {
+                    Show();
+                    PhosphorLaunch();
+                }
                 else
                 {
                     Show();
@@ -491,7 +498,7 @@ namespace RetroSpy
             Properties.Settings.Default.UseUSB2 = _vm.UseUSB2;
             Properties.Settings.Default.UseVJoy = _vm.UseVJoy;
 
-            if (_vm.Sources.SelectedItem == InputSource.MISTER)
+            if (IsMiSTerLogin(_vm.Sources.SelectedItem))
             {
                 Properties.Settings.Default.MisterUsername = _vm.Username;
                 Properties.Settings.Default.MisterPassword = _vm.DontSavePassword ? "" : txtPassword.Text;
@@ -540,6 +547,21 @@ namespace RetroSpy
                          || _vm.Sources.SelectedItem == InputSource.POCKET))
                 {
                     reader = _vm.Sources.SelectedItem.BuildReader4(txtHostname.Text ?? String.Empty, txtUsername.Text ?? String.Empty, txtPassword.Text ?? String.Empty);
+                }
+                else if (_vm.Sources.SelectedItem != null && _vm.Sources.SelectedItem.BuildReader5 != null && _vm.Sources.SelectedItem == InputSource.PHOSPHOR)
+                {
+                    PhosphorSettings.Save(_vm.PhosphorPlayer, _vm.PhosphorLook, _vm.PhosphorBackground);
+                    reader = _vm.Sources.SelectedItem.BuildReader5(txtHostname.Text ?? String.Empty, txtUsername.Text ?? String.Empty, txtPassword.Text ?? String.Empty, _vm.PhosphorPlayer.ToString(CultureInfo.InvariantCulture));
+                    if (_vm.PhosphorLook == 0 && reader is PhosphorReader pr)
+                    {
+                        _portListUpdateTimer.Stop();
+                        var pv = new PhosphorViewWindow(pr, (PhosphorBackground)_vm.PhosphorBackground, _vm.StaticViewerWindowName);
+                        Show();
+                        await pv.ShowDialog(this);
+                        _portListUpdateTimer.Start();
+                        Show();
+                        return;
+                    }
                 }
                 else if (_vm.Sources.SelectedItem != null && _vm.Sources.SelectedItem.BuildReader5 != null && _vm.Sources.SelectedItem == InputSource.MISTER)
                 {
@@ -616,6 +638,69 @@ namespace RetroSpy
             Show();
         }
 
+        public static string? PhosphorLaunchHost { get; set; }
+        public static int PhosphorLaunchPlayer { get; set; } = -1;
+        public static bool PhosphorLaunchGo { get; set; }
+
+        /// <summary>Opened from Phosphor (--phosphor address): that SuperStation, its login if none is saved, and Find (or Go).</summary>
+        private void PhosphorLaunch()
+        {
+            for (int i = 0; i < _vm.Sources.Count; i++)
+            {
+                if (_vm.Sources[i] != InputSource.PHOSPHOR) continue;
+                _vm.Sources.SelectId(i);
+                SourcesComboBox.SelectedIndex = i;
+                break;
+            }
+            _vm.Hostname = PhosphorLaunchHost;
+            txtHostname.Text = PhosphorLaunchHost;
+            if (string.IsNullOrEmpty(txtUsername.Text)) txtUsername.Text = "root";
+            if (string.IsNullOrEmpty(txtPassword.Text)) txtPassword.Text = "1";
+            if (PhosphorLaunchPlayer >= 0 && PhosphorLaunchPlayer <= 4) _vm.PhosphorPlayer = PhosphorLaunchPlayer;
+            if (PhosphorLaunchGo) GoButton_Click(null, null);
+            else PhosphorFind_Click(null, null);
+        }
+
+        /// <summary>The skins a source lists: the SuperStation (Phosphor) source reads the controller as the MiSTer source does.</summary>
+        private static InputSource? SkinSource(InputSource? s) => s == InputSource.PHOSPHOR ? InputSource.MISTER : s;
+
+        private static bool IsMiSTerLogin(InputSource? s) => s == InputSource.MISTER || s == InputSource.PHOSPHOR;
+
+        private async void PhosphorFind_Click(object? sender, RoutedEventArgs? e)
+        {
+            string host = txtHostname.Text ?? "", user = txtUsername.Text ?? "", pass = txtPassword.Text ?? "";
+            if (string.IsNullOrWhiteSpace(host))
+            {
+                _vm.PhosphorTitle = "Type the SuperStation's address below";
+                _vm.PhosphorDetail = "Phosphor shows it in Settings › Network (or open RetroSpy from Phosphor's app, which fills it in).";
+                return;
+            }
+            _vm.PhosphorTitle = "Looking for the SuperStation…";
+            _vm.PhosphorDetail = host;
+            try
+            {
+                var st = await System.Threading.Tasks.Task.Run(() => PhosphorClient.Query(host, user, pass));
+                if (st == null)
+                {
+                    _vm.PhosphorTitle = "Not a SuperStation running Phosphor";
+                    _vm.PhosphorDetail = host + " answered, but Phosphor isn't on it. The MiSTer source works with any MiSTer.";
+                    return;
+                }
+                var c = st.Pick(_vm.PhosphorPlayer);
+                _vm.PhosphorTitle = c == null ? "No controller connected" : c.Title;
+                _vm.PhosphorDetail = c == null
+                    ? "Connect a controller to the SuperStation, then press Find again."
+                    : "Layout from Phosphor: " + (string.IsNullOrEmpty(c.LayoutName) ? c.LayoutKey : c.LayoutName) + " · js" + c.Js.ToString(CultureInfo.InvariantCulture)
+                      + (st.Controllers.Count > 1 ? " · " + st.Controllers.Count.ToString(CultureInfo.InvariantCulture) + " controllers" : "")
+                      + (st.RetroSpyInstalled ? "" : " · RetroSpy isn't installed on the SuperStation yet: Phosphor › Settings › Controllers › RetroSpy");
+            }
+            catch (Exception ex)
+            {
+                _vm.PhosphorTitle = "Couldn't reach the SuperStation";
+                _vm.PhosphorDetail = host + ": " + ex.Message;
+            }
+        }
+
         private void PopulateSources()
         {
             List<InputSource> prunedSources = new();
@@ -684,6 +769,11 @@ namespace RetroSpy
 
         private void About_Click(object sender, RoutedEventArgs e)
         {
+            _ = new AboutWindow().ShowDialog(this);
+        }
+
+        internal static void OpenRetroSpyAbout()
+        {
             string url = String.Format("https://retro-spy.com/about-retrospy/?version={0}&buildtime={1}&cache_buster={2}",
                 System.Web.HttpUtility.UrlEncode(Assembly.GetEntryAssembly()?.GetName()?.Version?.ToString()), System.Web.HttpUtility.UrlEncode(Properties.Resources.BuildDate), Guid.NewGuid());
 
@@ -728,7 +818,7 @@ namespace RetroSpy
 
         private void SourceSelectComboBox_SelectionChanged(object? sender, SelectionChangedEventArgs? e)
         {
-            if (sender != null && sender is ComboBox box)
+            if (sender != null && sender is SelectingItemsControl box)
             {
                 _vm.Sources.SelectId(box.SelectedIndex);
             }
@@ -738,12 +828,12 @@ namespace RetroSpy
                 return;
             }
 
-            _vm.Username = _vm.Sources.SelectedItem == InputSource.MISTER ? Properties.Settings.Default.MisterUsername
+            _vm.Username = IsMiSTerLogin(_vm.Sources.SelectedItem) ? Properties.Settings.Default.MisterUsername
                                                               : Properties.Settings.Default.BeagleboneUsername;
             txtUsername.Text = _vm.Username;
 
 
-            txtPassword.Text = _vm.Sources.SelectedItem == InputSource.MISTER ? Properties.Settings.Default.MisterPassword
+            txtPassword.Text = IsMiSTerLogin(_vm.Sources.SelectedItem) ? Properties.Settings.Default.MisterPassword
                                                   : Properties.Settings.Default.BeaglebonePassword;
 
             _vm.ComPortOptionVisibility = _vm.Sources.SelectedItem.RequiresComPort;
@@ -752,6 +842,12 @@ namespace RetroSpy
             _vm.MiSTerGamepadOptionVisibility = _vm.Sources.SelectedItem.RequiresMisterId;
             _vm.SSHOptionVisibility = _vm.Sources.SelectedItem.RequiresHostname;
             _vm.EmulatorPIDsOptionVisibility = _vm.Sources.SelectedItem.RequiresEmulator;
+            _vm.SourceName = _vm.Sources.SelectedItem.Name;
+            _vm.PhosphorOptionVisibility = _vm.Sources.SelectedItem == InputSource.PHOSPHOR;
+            if (_vm.PhosphorOptionVisibility && _vm.PhosphorTitle == "")
+            {
+                PhosphorFind_Click(null, null);
+            }
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 UpdateMayflashList();
@@ -767,7 +863,7 @@ namespace RetroSpy
             UpdatePortListThread();
             UpdateBeagleList();
             UpdateBeagleI2CList();
-            _vm.Skins.UpdateContents(_skins?.Where(x => x.Type == _vm.Sources.SelectedItem));
+            _vm.Skins.UpdateContents(_skins?.Where(x => x.Type == SkinSource(_vm.Sources.SelectedItem)));
             _vm.Skins.SelectFirst();
             if (_vm.Sources.GetSelectedId() == Properties.Settings.Default.Source)
             {
@@ -1164,6 +1260,43 @@ namespace RetroSpy
 
     public class SetupWindowViewModel : INotifyPropertyChanged
     {
+        // ---------------------------------------------------------------- Phosphor edition
+
+        private string _sourceName = "";
+        public string SourceName { get => _sourceName; set { _sourceName = value; NotifyPropertyChanged(nameof(SourceName)); } }
+
+        private bool _phosphorOptionVisibility;
+        public bool PhosphorOptionVisibility
+        {
+            get => _phosphorOptionVisibility;
+            set { _phosphorOptionVisibility = value; NotifyPropertyChanged(nameof(PhosphorOptionVisibility)); NotifyPropertyChanged(nameof(SkinsVisibility)); NotifyPropertyChanged(nameof(PhosphorUsesLayout)); }
+        }
+
+        private string _phosphorTitle = "";
+        public string PhosphorTitle { get => _phosphorTitle; set { _phosphorTitle = value; NotifyPropertyChanged(nameof(PhosphorTitle)); } }
+
+        private string _phosphorDetail = "";
+        public string PhosphorDetail { get => _phosphorDetail; set { _phosphorDetail = value; NotifyPropertyChanged(nameof(PhosphorDetail)); } }
+
+        private int _phosphorPlayer = PhosphorSettings.Load().player;
+        public int PhosphorPlayer { get => _phosphorPlayer; set { _phosphorPlayer = value; NotifyPropertyChanged(nameof(PhosphorPlayer)); } }
+
+        private int _phosphorLook = PhosphorSettings.Load().look;
+        public int PhosphorLook
+        {
+            get => _phosphorLook;
+            set { _phosphorLook = value; NotifyPropertyChanged(nameof(PhosphorLook)); NotifyPropertyChanged(nameof(SkinsVisibility)); NotifyPropertyChanged(nameof(PhosphorUsesLayout)); }
+        }
+
+        private int _phosphorBackground = PhosphorSettings.Load().background;
+        public int PhosphorBackground { get => _phosphorBackground; set { _phosphorBackground = value; NotifyPropertyChanged(nameof(PhosphorBackground)); } }
+
+        /// <summary>Phosphor's drawing is shown (not a RetroSpy skin)</summary>
+        public bool PhosphorUsesLayout => _phosphorOptionVisibility && _phosphorLook == 0;
+
+        /// <summary>The skin and background lists: not while Phosphor's drawing is used</summary>
+        public bool SkinsVisibility => !PhosphorUsesLayout;
+
         public ListView<string> Ports { get; set; }
         public ListView<string> Ports2 { get; set; }
         public ListView<int> XIAndGamepad { get; set; }

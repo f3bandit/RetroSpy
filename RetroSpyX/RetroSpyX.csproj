@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
@@ -12,9 +12,10 @@
     <NeutralLanguage>en-US</NeutralLanguage>
   </PropertyGroup>
 	<PropertyGroup>
-		<AssemblyVersion>6.10</AssemblyVersion>
-		<FileVersion>6.10</FileVersion>
-		<Version>6.10</Version>
+		<AssemblyVersion>6.10.1</AssemblyVersion>
+		<FileVersion>6.10.1</FileVersion>
+		<Version>6.10.1</Version>
+		<InformationalVersion>6.10.1-phosphor</InformationalVersion>
 		<Copyright>Copyright © 2022</Copyright>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
 		<UseWindowsForms>False</UseWindowsForms>

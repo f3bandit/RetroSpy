@@ -1,7 +1,105 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="RetroSpy.App" RequestedThemeVariant="Light">
+             x:Class="RetroSpy.App" RequestedThemeVariant="Dark">
+    <!-- Phosphor edition: Phosphor's dark look (its Windows app and TV menu), amber accent -->
+    <Application.Resources>
+        <SolidColorBrush x:Key="PhBg" Color="#141416"/>
+        <SolidColorBrush x:Key="PhBar" Color="#101012"/>
+        <SolidColorBrush x:Key="PhPanel" Color="#1c1c1f"/>
+        <SolidColorBrush x:Key="PhLine" Color="#2c2c30"/>
+        <SolidColorBrush x:Key="PhField" Color="#3a3a40"/>
+        <SolidColorBrush x:Key="PhText" Color="#ececec"/>
+        <SolidColorBrush x:Key="PhSoft" Color="#c9c4bb"/>
+        <SolidColorBrush x:Key="PhMuted" Color="#a39d92"/>
+        <SolidColorBrush x:Key="PhFaint" Color="#7d786f"/>
+        <SolidColorBrush x:Key="PhAccent" Color="#f0b54a"/>
+        <SolidColorBrush x:Key="PhAccentBg" Color="#2c2618"/>
+        <SolidColorBrush x:Key="PhGood" Color="#7bd88f"/>
+        <FontFamily x:Key="PhFont">Segoe UI, Inter, Arial</FontFamily>
+        <FontFamily x:Key="PhMono">Cascadia Mono, Consolas, monospace</FontFamily>
+    </Application.Resources>
     <Application.Styles>
-		<FluentTheme/>
+        <FluentTheme>
+            <FluentTheme.Palettes>
+                <ColorPaletteResources x:Key="Dark" Accent="#f0b54a" RegionColor="#141416" AltHigh="#141416" BaseHigh="#ececec"/>
+            </FluentTheme.Palettes>
+        </FluentTheme>
+        <Style Selector="Window">
+            <Setter Property="Background" Value="{StaticResource PhBg}"/>
+            <Setter Property="Foreground" Value="{StaticResource PhText}"/>
+            <Setter Property="FontFamily" Value="{StaticResource PhFont}"/>
+        </Style>
+        <Style Selector="TextBlock.h">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="{StaticResource PhMuted}"/>
+            <Setter Property="LetterSpacing" Value="3"/>
+        </Style>
+        <Style Selector="TextBlock.field">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="{StaticResource PhMuted}"/>
+            <Setter Property="Margin" Value="0,0,0,5"/>
+        </Style>
+        <Style Selector="Border.card">
+            <Setter Property="Background" Value="{StaticResource PhPanel}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource PhLine}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="14"/>
+        </Style>
+        <Style Selector="TextBox, ComboBox">
+            <Setter Property="Background" Value="{StaticResource PhBg}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource PhField}"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="MinHeight" Value="34"/>
+        </Style>
+        <Style Selector="Button">
+            <Setter Property="Background" Value="{StaticResource PhBg}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource PhLine}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Foreground" Value="{StaticResource PhSoft}"/>
+            <Setter Property="Padding" Value="16,8"/>
+        </Style>
+        <Style Selector="Button.primary">
+            <Setter Property="Background" Value="{StaticResource PhAccent}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="#1a1408"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Padding" Value="28,11"/>
+        </Style>
+        <Style Selector="Button.primary:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#f6c46a"/>
+            <Setter Property="Foreground" Value="#1a1408"/>
+        </Style>
+        <Style Selector="ListBox">
+            <Setter Property="Background" Value="Transparent"/>
+        </Style>
+        <Style Selector="ListBox.list">
+            <Setter Property="Background" Value="{StaticResource PhBg}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource PhField}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="8"/>
+        </Style>
+        <Style Selector="ListBoxItem">
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="10,7"/>
+            <Setter Property="FontSize" Value="14"/>
+        </Style>
+        <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource PhAccentBg}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource PhAccent}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+        <Style Selector="ListBoxItem:selected">
+            <Setter Property="Foreground" Value="{StaticResource PhText}"/>
+        </Style>
+        <Style Selector="CheckBox">
+            <Setter Property="FontSize" Value="14"/>
+        </Style>
+        <Style Selector="Menu">
+            <Setter Property="Background" Value="{StaticResource PhBar}"/>
+        </Style>
     </Application.Styles>
 </Application>
