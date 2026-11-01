@@ -11,25 +11,26 @@ namespace RetroSpy.Phosphor
     {
         private static string FilePath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RetroSpy", "phosphor.json");
 
-        private sealed class Data { public int Player { get; set; } public int Look { get; set; } public int Background { get; set; } }
+        private sealed class Data { public int Player { get; set; } public int Look { get; set; } public int Background { get; set; } public string Layout { get; set; } = ""; }
 
-        public static (int player, int look, int background) Load()
+        /// <summary>layout: a Phosphor layout key to always draw, or "" for Automatic (the SuperStation's choice)</summary>
+        public static (int player, int look, int background, string layout) Load()
         {
             try
             {
                 var d = JsonSerializer.Deserialize<Data>(File.ReadAllText(FilePath));
-                if (d != null) return (Math.Clamp(d.Player, 0, 4), Math.Clamp(d.Look, 0, 1), Math.Clamp(d.Background, 0, 2));
+                if (d != null) return (Math.Clamp(d.Player, 0, 4), Math.Clamp(d.Look, 0, 1), Math.Clamp(d.Background, 0, 2), d.Layout ?? "");
             }
             catch (Exception) { }
-            return (0, 0, 0);
+            return (0, 0, 0, "");
         }
 
-        public static void Save(int player, int look, int background)
+        public static void Save(int player, int look, int background, string layout)
         {
             try
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(FilePath)!);
-                File.WriteAllText(FilePath, JsonSerializer.Serialize(new Data { Player = player, Look = look, Background = background }));
+                File.WriteAllText(FilePath, JsonSerializer.Serialize(new Data { Player = player, Look = look, Background = background, Layout = layout ?? "" }));
             }
             catch (Exception) { }
         }

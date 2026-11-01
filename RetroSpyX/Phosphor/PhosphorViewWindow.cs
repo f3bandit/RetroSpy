@@ -73,7 +73,9 @@ namespace RetroSpy.Phosphor
         {
             var c = r.Controller;
             _pad.SetController(r.Layout, c);
-            string what = c == null ? "No controller" : c.Title + (string.IsNullOrEmpty(c.LayoutName) ? "" : " · " + c.LayoutName);
+            string what = c == null ? "No controller"
+                : r.LayoutChosen ? c.Title + " · " + (r.Layout?.Name ?? r.ChosenLayout) + " · chosen"
+                : c.Title + (string.IsNullOrEmpty(c.LayoutName) ? "" : " · " + c.LayoutName);
             _title.Text = what;
             Title = _staticName ? "RetroSpy" : "RetroSpy · " + what;
         }

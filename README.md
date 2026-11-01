@@ -4,8 +4,14 @@ This is a fork of [RetroSpy](https://github.com/retrospy/RetroSpy) by **zoggins*
 
 - **SuperStation (Phosphor)** source: RetroSpy asks Phosphor (over the same SSH login the MiSTer source uses) which controller is active, Player 1's or a player you pick, and follows it when that changes.
 - **Phosphor layout**: the controller is drawn the way Phosphor's controller test draws it (Xbox-style, PlayStation, Switch Pro, NES, SNES, PC Engine, Genesis 3/6, arcade sticks and more), detected by Phosphor, lit live, on a dark, green-screen or transparent background for OBS. RetroSpy's own MiSTer skins work with this source too.
+- **Layout**: draw any of Phosphor's 22 layouts whatever controller is active, or Automatic (what the SuperStation uses).
+- **Start watching / Stop watching** on the same button; the viewer opens next to the window.
+- **Updates itself** from this edition's releases (a banner when there's a newer one, Help › Check for updates), checked against each release's SHA256SUMS.txt. Only `phosphor-` releases count, so RetroSpy's own builds are never installed over it.
+- **The tray, and Start with Windows**: closing the window leaves it in the tray (open it, start or stop watching, check for updates, exit); Options › Start with Windows starts it in the tray. One RetroSpy at a time: opening it again (from Phosphor's Windows app) hands the SuperStation to the one already running.
 - Phosphor's look for the app, and an About window with the credits.
-- `RetroSpy --phosphor <address> [--player N] [--go]` opens it on that SuperStation (Phosphor's Windows app opens it this way).
+- `RetroSpy --phosphor <address> [--player N] [--go]` opens it on that SuperStation (Phosphor's Windows app opens it this way); `--tray` starts it in the tray.
+
+Download it from this repository's [releases](https://github.com/f3bandit/RetroSpy/releases) (unzip, run `RetroSpy\RetroSpy.exe`), or install it from Phosphor for Windows (Settings › Controllers › RetroSpy).
 
 The input is read the way RetroSpy's MiSTer source reads it (its MiSTer program, installed on the SuperStation through Update All). GPL-3.0, as RetroSpy. Phosphor edition by f3bandit.
 

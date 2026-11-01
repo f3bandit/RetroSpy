@@ -12,10 +12,10 @@
     <NeutralLanguage>en-US</NeutralLanguage>
   </PropertyGroup>
 	<PropertyGroup>
-		<AssemblyVersion>6.10.1</AssemblyVersion>
-		<FileVersion>6.10.1</FileVersion>
-		<Version>6.10.1</Version>
-		<InformationalVersion>6.10.1-phosphor</InformationalVersion>
+		<AssemblyVersion>6.11.0</AssemblyVersion>
+		<FileVersion>6.11.0</FileVersion>
+		<Version>6.11.0</Version>
+		<InformationalVersion>6.11.0-phosphor</InformationalVersion>
 		<Copyright>Copyright © 2022</Copyright>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
 		<UseWindowsForms>False</UseWindowsForms>
@@ -3613,6 +3613,7 @@
 
 	<ItemGroup>
 		<AvaloniaResource Include="Assets\**" />
+		<AvaloniaResource Include="RetroSpy.ico" />
 	</ItemGroup>
 	
   <ItemGroup>

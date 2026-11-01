@@ -26,6 +26,9 @@ jobs:
           dotnet publish RetroSpyX/RetroSpyX.csproj -c Release -r win-x64 --self-contained true -nologo -o out/RetroSpy
           cp LICENSE out/RetroSpy/LICENSE.txt
           cp README.md out/RetroSpy/README.md
+          # the version, for Phosphor for Windows (installs or updates RetroSpy\ only when it's older)
+          sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' RetroSpyX/RetroSpyX.csproj | head -1 > out/RetroSpy/version.txt
+          test -s out/RetroSpy/version.txt
           test -f out/RetroSpy/RetroSpy.exe && test -d out/RetroSpy/skins
           cd out && zip -qr ../RetroSpy-Phosphor-edition-win64.zip RetroSpy
       - uses: actions/upload-artifact@v4
@@ -42,7 +45,7 @@ jobs:
           sha256sum RetroSpy-Phosphor-edition-win64.zip > SHA256SUMS.txt
           gh release create "$TAG" RetroSpy-Phosphor-edition-win64.zip SHA256SUMS.txt --target "$GITHUB_SHA" \
             --title "RetroSpy ${TAG#phosphor-} · Phosphor edition" \
-            --notes "RetroSpy by zoggins and contributors (retro-spy.com), based on NintendoSpy by jaburns; skins by their authors. Phosphor edition by f3bandit: the SuperStation (Phosphor) source and Phosphor layout view, Phosphor's look. GPL-3.0. Unzip and run RetroSpy\\RetroSpy.exe, or get it with Phosphor for Windows."
+            --notes "RetroSpy by zoggins and contributors (retro-spy.com), based on NintendoSpy by jaburns; skins by their authors. Phosphor edition by f3bandit: the SuperStation (Phosphor) source and Phosphor layout view, Phosphor's look. GPL-3.0. Unzip and run RetroSpy\\RetroSpy.exe, or install it from Phosphor for Windows (Settings > Controllers > RetroSpy). It keeps itself up to date (Help > Check for updates), and can sit in the tray and start with Windows."
       - name: Remove the release branch
         if: startsWith(github.ref, 'refs/heads/release/phosphor-')
         env:

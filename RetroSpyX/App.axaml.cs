@@ -1,4 +1,6 @@
 ﻿using Avalonia;
+using System;
+using System.Linq;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 
@@ -37,16 +39,17 @@ namespace RetroSpy
                             delay = item.Substring(7);
                         }
                     }
-                    // Phosphor edition: --phosphor <address> [--player N] [--go] opens the SuperStation (Phosphor) source on
-                    // that SuperStation (Phosphor's Windows app opens RetroSpy this way); --go starts watching
-                    for (int i = 0; i < args.Args.Length; i++)
-                    {
-                        if (args.Args[i] == "--phosphor" && i + 1 < args.Args.Length) SetupWindow.PhosphorLaunchHost = args.Args[++i];
-                        else if (args.Args[i] == "--player" && i + 1 < args.Args.Length && int.TryParse(args.Args[++i], out int pl)) SetupWindow.PhosphorLaunchPlayer = pl;
-                        else if (args.Args[i] == "--go") SetupWindow.PhosphorLaunchGo = true;
-                    }
+                    // Phosphor edition: one RetroSpy at a time (a second one hands its command line to the first, which
+                    // shows itself, and exits); --phosphor <address> [--player N] [--go] opens the SuperStation (Phosphor)
+                    // source on that SuperStation (Phosphor's Windows app opens RetroSpy this way), --go starts watching;
+                    // --tray (Start with Windows) starts in the tray, no window
+                    if (!Phosphor.PhosphorTray.FirstInstance(args.Args)) { Environment.Exit(0); return; }
+                    Phosphor.PhosphorTray.ApplyLaunchArgs(args.Args);
+                    bool hidden = args.Args.Contains("--tray");
 
-                    desktop.MainWindow = new SetupWindow(skipSetup, source, skin, delay);
+                    SetupWindow.StartHidden = hidden;
+                    var w = new SetupWindow(skipSetup, source, skin, delay);
+                    Phosphor.PhosphorTray.Setup(this, desktop, w, hidden);
                 };
             }
 

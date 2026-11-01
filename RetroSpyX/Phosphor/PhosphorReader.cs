@@ -34,7 +34,13 @@ namespace RetroSpy.Phosphor
 
         public PhosphorStatus? Status { get; private set; }
         public PhosphorController? Controller { get; private set; }
-        public PhosphorLayout? Layout => Controller != null && Status != null && Status.Layouts.TryGetValue(Controller.LayoutKey, out var l) ? l : null;
+        /// <summary>A Phosphor layout key to always draw, whatever controller is active; "" for the SuperStation's own choice</summary>
+        public string ChosenLayout { get; set; } = "";
+        /// <summary>The chosen layout is being drawn (the SuperStation has it)</summary>
+        public bool LayoutChosen => ChosenLayout.Length > 0 && Status != null && Status.Layouts.ContainsKey(ChosenLayout);
+        public PhosphorLayout? Layout =>
+            LayoutChosen ? Status!.Layouts[ChosenLayout]
+            : Controller != null && Status != null && Status.Layouts.TryGetValue(Controller.LayoutKey, out var l) ? l : null;
 
         public PhosphorReader(string host, string user, string password, int player)
         {

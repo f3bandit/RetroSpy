@@ -213,6 +213,38 @@ namespace RetroSpy
             };
         }
 
+        /// <summary>The Layout list: Automatic, then Phosphor's layouts under their group names (not choosable)</summary>
+        private void FillPhosphorLayouts()
+        {
+            var combo = this.FindControl<ComboBox>("PhosphorLayoutCombo");
+            if (combo == null) return;
+            combo.Items.Clear();
+            combo.Items.Add(new Avalonia.Controls.ComboBoxItem { Content = "Automatic (what the SuperStation uses)", Tag = "" });
+            string group = "";
+            int select = 0;
+            foreach (var l in PhosphorLayouts.All)
+            {
+                if (l.Group != group)
+                {
+                    group = l.Group;
+                    combo.Items.Add(new Avalonia.Controls.ComboBoxItem
+                    {
+                        Content = group.ToUpperInvariant(), IsEnabled = false, FontSize = 11,
+                        Foreground = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#7d786f")), Padding = new Avalonia.Thickness(10, 10, 10, 2),
+                    });
+                }
+                combo.Items.Add(new Avalonia.Controls.ComboBoxItem { Content = l.Name, Tag = l.Key });
+                if (l.Key == _vm.PhosphorLayout) select = combo.Items.Count - 1;
+            }
+            combo.SelectedIndex = select;
+        }
+
+        private void PhosphorLayout_Changed(object? sender, SelectionChangedEventArgs e)
+        {
+            if (_vm == null || sender is not ComboBox combo) return;
+            if (combo.SelectedItem is Avalonia.Controls.ComboBoxItem { Tag: string key }) _vm.PhosphorLayout = key;
+        }
+
         private readonly bool letUpdatePortThreadRun = false;
         public SetupWindow(bool skipSetup = false, string? startsource = null, string? startskin = null, string? startdelay = null)
         {
@@ -245,6 +277,8 @@ namespace RetroSpy
                 isClosing = false;
                 _vm = new SetupWindowViewModel(this);
                 DataContext = _vm;
+                FillPhosphorLayouts();
+                Opened += (s, e) => { if (PhosphorUpdater.Due()) _ = CheckForUpdate(false); };
                 _excludedSources = new Collection<string>();
                 _resources = Properties.Resources.ResourceManager;
 
@@ -408,7 +442,7 @@ namespace RetroSpy
 
                         if (i == _vm.Sources.Count)
                         {
-                            Show();
+                            if (!StartHidden) Show();
                             AvaloniaMessageBoxDialog(_resources.GetString("RetroSpy", CultureInfo.CurrentUICulture), "Source specified on the command line cannot be found.", ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error);
                             return;
                         }
@@ -428,7 +462,7 @@ namespace RetroSpy
 
                         if (i == _vm.Skins.Count)
                         {
-                            Show();
+                            if (!StartHidden) Show();
                             AvaloniaMessageBoxDialog(_resources.GetString("RetroSpy", CultureInfo.CurrentUICulture), "Skin specified on the command line cannot be found.", ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error);
                             return;
                         }
@@ -446,12 +480,12 @@ namespace RetroSpy
                 }
                 else if (PhosphorLaunchHost != null)
                 {
-                    Show();
+                    if (!StartHidden) Show();
                     PhosphorLaunch();
                 }
                 else
                 {
-                    Show();
+                    if (!StartHidden) Show();
                 }
             }
             catch (TypeInitializationException ex)
@@ -471,8 +505,36 @@ namespace RetroSpy
             Hide();
         }
 
+        // the viewer that's open (Start watching opened it): the same button closes it (Stop watching), and the tray's
+        private Avalonia.Controls.Window? _watching;
+        public bool Watching => _watching != null;
+        public event EventHandler? WatchingChanged;
+
+        /// <summary>Shows the viewer next to this window (not over it, so Stop watching can be pressed) until it closes.</summary>
+        private async Task Watch(Avalonia.Controls.Window w)
+        {
+            var closed = new TaskCompletionSource();
+            w.Closed += (s, e) => closed.TrySetResult();
+            _watching = w;
+            goButton.Content = "Stop watching";
+            WatchingChanged?.Invoke(this, EventArgs.Empty);
+            w.Show();
+            await closed.Task;
+            _watching = null;
+            goButton.Content = "Start watching";
+            WatchingChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        /// <summary>Start watching, or stop when a viewer is open (the button, the tray)</summary>
+        public void StartOrStop() => GoButton_Click(null, null);
+
         private async void GoButton_Click(object? sender, RoutedEventArgs? e)
         {
+            if (_watching != null)
+            {
+                _watching.Close();               // (its reader stops with it; Watch puts the button back)
+                return;
+            }
             ViewWindow? v = null;
 
             Properties.Settings.Default.Port = _vm.Ports.SelectedItem;
@@ -550,14 +612,15 @@ namespace RetroSpy
                 }
                 else if (_vm.Sources.SelectedItem != null && _vm.Sources.SelectedItem.BuildReader5 != null && _vm.Sources.SelectedItem == InputSource.PHOSPHOR)
                 {
-                    PhosphorSettings.Save(_vm.PhosphorPlayer, _vm.PhosphorLook, _vm.PhosphorBackground);
+                    PhosphorSettings.Save(_vm.PhosphorPlayer, _vm.PhosphorLook, _vm.PhosphorBackground, _vm.PhosphorLayout);
                     reader = _vm.Sources.SelectedItem.BuildReader5(txtHostname.Text ?? String.Empty, txtUsername.Text ?? String.Empty, txtPassword.Text ?? String.Empty, _vm.PhosphorPlayer.ToString(CultureInfo.InvariantCulture));
                     if (_vm.PhosphorLook == 0 && reader is PhosphorReader pr)
                     {
+                        pr.ChosenLayout = _vm.PhosphorLayout;
                         _portListUpdateTimer.Stop();
                         var pv = new PhosphorViewWindow(pr, (PhosphorBackground)_vm.PhosphorBackground, _vm.StaticViewerWindowName);
                         Show();
-                        await pv.ShowDialog(this);
+                        await Watch(pv);
                         _portListUpdateTimer.Start();
                         Show();
                         return;
@@ -607,7 +670,7 @@ namespace RetroSpy
                                reader, _vm.StaticViewerWindowName, _vm.Sources.SelectedItem?.TypeTag ?? "none");
                 v.Loaded += OnViewerLoaded;
                 Show();
-                await v.ShowDialog(this);
+                await Watch(v);
                 _portListUpdateTimer.Start();
 
 
@@ -637,6 +700,9 @@ namespace RetroSpy
 
             Show();
         }
+
+        /// <summary>--tray (Start with Windows): the window isn't shown at start-up, only the tray icon</summary>
+        public static bool StartHidden { get; set; }
 
         public static string? PhosphorLaunchHost { get; set; }
         public static int PhosphorLaunchPlayer { get; set; } = -1;
@@ -766,6 +832,83 @@ namespace RetroSpy
             Properties.Settings.Default.Save();
         }
 
+
+        // ---------------------------------------------------------------- updates (Phosphor/PhosphorUpdater.cs)
+
+        private PhosphorUpdate? _update;
+
+        /// <summary>Asks GitHub for a newer RetroSpy, Phosphor edition. asked: from Help (says so when there's none or no
+        /// answer; a version said no to earlier is offered again)</summary>
+        private async Task CheckForUpdate(bool asked)
+        {
+            try
+            {
+                var u = await PhosphorUpdater.Check();
+                PhosphorUpdater.Checked();
+                if (u == null)
+                {
+                    if (asked) ShowUpdateBanner("RetroSpy " + PhosphorUpdater.Current + " is the newest Phosphor edition.", false);
+                    return;
+                }
+                if (!asked && PhosphorUpdater.Skipped(u.Version)) return;
+                _update = u;
+                bool can = PhosphorUpdater.CanInstall(out _, out string why);
+                ShowUpdateBanner("RetroSpy " + u.Version + " is out (this is " + PhosphorUpdater.Current + ")." + (can ? "" : " " + why), can);
+            }
+            catch (Exception)
+            {
+                if (asked) ShowUpdateBanner("Couldn't reach GitHub to check for a newer RetroSpy. Try again later.", false);
+            }
+        }
+
+        private void ShowUpdateBanner(string text, bool buttons)
+        {
+            Dispatcher.UIThread.Post(() =>
+            {
+                _vm.UpdateBannerText = text;
+                _vm.UpdateButtonsVisible = buttons;
+                _vm.UpdateBannerVisible = true;
+            });
+        }
+
+        private void CheckUpdates_Click(object sender, RoutedEventArgs e) => _ = CheckForUpdate(true);
+        public void CheckForUpdatesFromTray() => _ = CheckForUpdate(true);
+
+        private void StartWithWindows_Click(object sender, RoutedEventArgs e)
+        {
+            PhosphorTray.SetStartWithWindows(!PhosphorTray.StartsWithWindows());
+            _vm.StartWithWindows = PhosphorTray.StartsWithWindows();
+        }
+
+        /// <summary>A second RetroSpy (Phosphor for Windows' Open RetroSpy) asked for a SuperStation: as at start-up;
+        /// already watching: left as it is</summary>
+        public void PhosphorLaunchFromArgs()
+        {
+            if (_watching != null) { if (PhosphorLaunchGo) _watching.Activate(); return; }
+            PhosphorLaunch();
+        }
+
+        private void UpdateLater_Click(object? sender, RoutedEventArgs e)
+        {
+            if (_update != null) PhosphorUpdater.Skip(_update.Version);
+            _vm.UpdateBannerVisible = false;
+        }
+
+        private async void UpdateNow_Click(object? sender, RoutedEventArgs e)
+        {
+            if (_update == null) return;
+            _vm.UpdateButtonsVisible = false;
+            try
+            {
+                await PhosphorUpdater.Install(_update, new Progress<string>(t => _vm.UpdateBannerText = t));
+                isClosing = true;
+                Environment.Exit(0);                 // (the update script waits for this, swaps the folders and starts it again)
+            }
+            catch (Exception ex)
+            {
+                ShowUpdateBanner("The update didn't install: " + ex.Message, true);
+            }
+        }
 
         private void About_Click(object sender, RoutedEventArgs e)
         {
@@ -1287,6 +1430,19 @@ namespace RetroSpy
             get => _phosphorLook;
             set { _phosphorLook = value; NotifyPropertyChanged(nameof(PhosphorLook)); NotifyPropertyChanged(nameof(SkinsVisibility)); NotifyPropertyChanged(nameof(PhosphorUsesLayout)); }
         }
+
+        private bool _startWithWindows = PhosphorTray.StartsWithWindows();
+        public bool StartWithWindows { get => _startWithWindows; set { _startWithWindows = value; NotifyPropertyChanged(nameof(StartWithWindows)); } }
+
+        private bool _updateBannerVisible, _updateButtonsVisible;
+        private string _updateBannerText = "";
+        public bool UpdateBannerVisible { get => _updateBannerVisible; set { _updateBannerVisible = value; NotifyPropertyChanged(nameof(UpdateBannerVisible)); } }
+        public bool UpdateButtonsVisible { get => _updateButtonsVisible; set { _updateButtonsVisible = value; NotifyPropertyChanged(nameof(UpdateButtonsVisible)); } }
+        public string UpdateBannerText { get => _updateBannerText; set { _updateBannerText = value; NotifyPropertyChanged(nameof(UpdateBannerText)); } }
+
+        private string _phosphorLayout = PhosphorSettings.Load().layout;
+        /// <summary>A Phosphor layout key to always draw, or "" for Automatic</summary>
+        public string PhosphorLayout { get => _phosphorLayout; set { _phosphorLayout = value ?? ""; NotifyPropertyChanged(nameof(PhosphorLayout)); } }
 
         private int _phosphorBackground = PhosphorSettings.Load().background;
         public int PhosphorBackground { get => _phosphorBackground; set { _phosphorBackground = value; NotifyPropertyChanged(nameof(PhosphorBackground)); } }
