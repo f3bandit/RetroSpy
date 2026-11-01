@@ -278,6 +278,26 @@ namespace RetroSpy
                 _vm = new SetupWindowViewModel(this);
                 DataContext = _vm;
                 FillPhosphorLayouts();
+                // a test viewer from a saved answer (see PhosphorReader's test constructor): shown at start
+                string? demo = Environment.GetEnvironmentVariable("RETROSPY_PHOSPHOR_DEMO");
+                if (!string.IsNullOrEmpty(demo) && File.Exists(demo))
+                    Opened += async (s, e) =>
+                    {
+                        var st = PhosphorClient.Parse(File.ReadAllText(demo));
+                        if (st == null) return;
+                        var pr = new PhosphorReader(st, 0) { ChosenLayout = _vm.PhosphorLayout };
+                        await Watch(new PhosphorViewWindow(pr, (PhosphorBackground)_vm.PhosphorBackground, _vm.StaticViewerWindowName));
+                    };
+                _vm.PhosphorChoiceChanged += (s, e) =>
+                {
+                    PhosphorSettings.Save(_vm.PhosphorPlayer, _vm.PhosphorLook, _vm.PhosphorBackground, _vm.PhosphorLayout);
+                    if (_watching is PhosphorViewWindow pv && pv.Reader != null)
+                    {
+                        pv.Reader.ChosenLayout = _vm.PhosphorLayout;
+                        pv.SetBackground((PhosphorBackground)_vm.PhosphorBackground);
+                        pv.Redraw();
+                    }
+                };
                 Opened += (s, e) => { if (PhosphorUpdater.Due()) _ = CheckForUpdate(false); };
                 _excludedSources = new Collection<string>();
                 _resources = Properties.Resources.ResourceManager;
@@ -1470,10 +1490,12 @@ namespace RetroSpy
 
         private string _phosphorLayout = PhosphorSettings.Load().layout;
         /// <summary>A Phosphor layout key to always draw, or "" for Automatic</summary>
-        public string PhosphorLayout { get => _phosphorLayout; set { _phosphorLayout = value ?? ""; NotifyPropertyChanged(nameof(PhosphorLayout)); } }
+        public string PhosphorLayout { get => _phosphorLayout; set { _phosphorLayout = value ?? ""; NotifyPropertyChanged(nameof(PhosphorLayout)); PhosphorChoiceChanged?.Invoke(this, EventArgs.Empty); } }
 
         private int _phosphorBackground = PhosphorSettings.Load().background;
-        public int PhosphorBackground { get => _phosphorBackground; set { _phosphorBackground = value; NotifyPropertyChanged(nameof(PhosphorBackground)); } }
+        public int PhosphorBackground { get => _phosphorBackground; set { _phosphorBackground = value; NotifyPropertyChanged(nameof(PhosphorBackground)); PhosphorChoiceChanged?.Invoke(this, EventArgs.Empty); } }
+        /// <summary>Background or Layout changed: saved, and applied to a viewer that's open</summary>
+        public event EventHandler? PhosphorChoiceChanged;
 
         /// <summary>Phosphor's drawing is shown (not a RetroSpy skin)</summary>
         public bool PhosphorUsesLayout => _phosphorOptionVisibility && _phosphorLook == 0;

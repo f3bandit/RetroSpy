@@ -42,6 +42,16 @@ namespace RetroSpy.Phosphor
             LayoutChosen ? Status!.Layouts[ChosenLayout]
             : Controller != null && Status != null && Status.Layouts.TryGetValue(Controller.LayoutKey, out var l) ? l : null;
 
+        /// <summary>A test viewer: a SuperStation's saved "retrospy" answer, no connection and no input
+        /// (RETROSPY_PHOSPHOR_DEMO=answer.json; used to check the viewer's drawing and backgrounds)</summary>
+        internal PhosphorReader(PhosphorStatus st, int player)
+        {
+            _host = _user = _password = "";
+            _player = player;
+            Status = st;
+            Controller = st.Pick(player);
+        }
+
         public PhosphorReader(string host, string user, string password, int player)
         {
             _host = host; _user = user; _password = password; _player = player;

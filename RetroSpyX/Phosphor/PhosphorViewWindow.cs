@@ -14,6 +14,7 @@ namespace RetroSpy.Phosphor
     public sealed class PhosphorViewWindow : Window
     {
         private readonly PhosphorReader _reader;
+        public PhosphorReader Reader => _reader;
         private readonly PhosphorPadView _pad = new();
         private readonly TextBlock _title = new() { FontSize = 13, Foreground = new SolidColorBrush(Color.Parse("#a39d92")), VerticalAlignment = VerticalAlignment.Center };
         private readonly bool _staticName;
@@ -33,7 +34,24 @@ namespace RetroSpy.Phosphor
             MinHeight = 190;
             Icon = null;
 
+            _pad.Margin = new Thickness(22);
+            SetBackground(background);
+
+            UpdateController(reader);
+            reader.ControllerStateChanged += (s, e) => _pad.SetState(e);
+            reader.StatusChanged += (s, e) => UpdateController(reader);
+            reader.ControllerDisconnected += (s, e) => Close();
+            Closing += (s, e) => _reader.Finish();
+        }
+
+        /// <summary>Dark (with the controller's name on a bar), green screen or transparent; also while it's open
+        /// (the setup window's Background, changed while watching)</summary>
+        public void SetBackground(PhosphorBackground background)
+        {
             var root = new DockPanel();
+            if (_pad.Parent is Panel old) old.Children.Remove(_pad);
+            if (_title.Parent is Border ob) ob.Child = null;
+            TransparencyLevelHint = new[] { background == PhosphorBackground.Transparent ? WindowTransparencyLevel.Transparent : WindowTransparencyLevel.None };
             if (background == PhosphorBackground.Dark)
             {
                 Background = new SolidColorBrush(Color.Parse("#141416"));
@@ -49,25 +67,14 @@ namespace RetroSpy.Phosphor
                 DockPanel.SetDock(bar, Dock.Top);
                 root.Children.Add(bar);
             }
-            else if (background == PhosphorBackground.GreenScreen)
-            {
-                Background = new SolidColorBrush(Color.Parse("#00ff00"));
-            }
-            else
-            {
-                Background = Brushes.Transparent;
-                TransparencyLevelHint = new[] { WindowTransparencyLevel.Transparent };
-            }
-            _pad.Margin = new Thickness(22);
+            else if (background == PhosphorBackground.GreenScreen) Background = new SolidColorBrush(Color.Parse("#00ff00"));
+            else Background = Brushes.Transparent;
             root.Children.Add(_pad);
             Content = root;
-
-            UpdateController(reader);
-            reader.ControllerStateChanged += (s, e) => _pad.SetState(e);
-            reader.StatusChanged += (s, e) => UpdateController(reader);
-            reader.ControllerDisconnected += (s, e) => Close();
-            Closing += (s, e) => _reader.Finish();
         }
+
+        /// <summary>The layout chosen in the setup window, changed while watching</summary>
+        public void Redraw() => UpdateController(_reader);
 
         private void UpdateController(PhosphorReader r)
         {
