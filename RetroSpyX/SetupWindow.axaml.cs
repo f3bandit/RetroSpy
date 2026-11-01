@@ -732,17 +732,45 @@ namespace RetroSpy
 
         private static bool IsMiSTerLogin(InputSource? s) => s == InputSource.MISTER || s == InputSource.PHOSPHOR;
 
+        /// <summary>Something answers on SSH at that address within 2 s</summary>
+        private static async Task<bool> Answers(string host)
+        {
+            try
+            {
+                using var tcp = new System.Net.Sockets.TcpClient();
+                var c = tcp.ConnectAsync(host, 22);
+                return await Task.WhenAny(c, Task.Delay(2000)) == c && tcp.Connected;
+            }
+            catch (Exception) { return false; }
+        }
+
         private async void PhosphorFind_Click(object? sender, RoutedEventArgs? e)
         {
-            string host = txtHostname.Text ?? "", user = txtUsername.Text ?? "", pass = txtPassword.Text ?? "";
-            if (string.IsNullOrWhiteSpace(host))
+            string host = (txtHostname.Text ?? "").Trim(), user = txtUsername.Text ?? "", pass = txtPassword.Text ?? "";
+            if (string.IsNullOrEmpty(user)) txtUsername.Text = user = "root";
+            if (string.IsNullOrEmpty(pass)) txtPassword.Text = pass = "1";
+            // no address, or the one typed doesn't answer: search this PC's network for it (as Phosphor for Windows does)
+            if (host.Length == 0 || !await Answers(host))
             {
-                _vm.PhosphorTitle = "Type the SuperStation's address below";
-                _vm.PhosphorDetail = "Phosphor shows it in Settings › Network (or open RetroSpy from Phosphor's app, which fills it in).";
-                return;
+                _vm.PhosphorTitle = "Searching the network for the SuperStation…";
+                _vm.PhosphorDetail = host.Length == 0 ? "Every address on this PC's network, a few seconds." : host + " doesn't answer: searching this PC's network instead.";
+                List<PhosphorFound> found;
+                try { found = await PhosphorDiscover.Find(); }
+                catch (Exception) { found = new List<PhosphorFound>(); }
+                if (found.Count == 0)
+                {
+                    _vm.PhosphorTitle = "No SuperStation found on this network";
+                    _vm.PhosphorDetail = "Check it's on and on the same network as this PC, or type its address below (Phosphor shows it in Settings › Network).";
+                    return;
+                }
+                host = found[0].Address;
+                txtHostname.Text = host;
+                _vm.Hostname = host;
+                if (found.Count > 1)
+                    _vm.PhosphorDetail = found.Count.ToString(CultureInfo.InvariantCulture) + " SuperStations found (" + string.Join(", ", found.Select(f => f.Address)) + "): using " + host + ". Type another address to pick it.";
             }
             _vm.PhosphorTitle = "Looking for the SuperStation…";
-            _vm.PhosphorDetail = host;
+            if (_vm.PhosphorDetail == null || !_vm.PhosphorDetail.Contains("SuperStations found")) _vm.PhosphorDetail = host;
             try
             {
                 var st = await System.Threading.Tasks.Task.Run(() => PhosphorClient.Query(host, user, pass));
